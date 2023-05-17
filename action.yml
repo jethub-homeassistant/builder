@@ -11,7 +11,7 @@ runs:
     - shell: bash
       id: version
       run: |
-        input=$(echo "${{ github.action_path }}" | cut -d"/" -f8 )
+        input=$(echo "${{ github.action_path }}" | rev | cut -d"/" -f1 | rev )
         if [[ "${input}" == "master" ]] || [[ "${input}" == "master-jethub" ]] || [[ -z "${input}" ]]; then
           input="latest"
         fi
