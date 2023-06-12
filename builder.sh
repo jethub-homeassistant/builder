@@ -22,7 +22,7 @@ CUSTOM_CACHE_TAG=
 COSIGN=false
 RELEASE_TAG=false
 GIT_REPOSITORY=
-GIT_BRANCH="master"
+GIT_BRANCH="master-jethub"
 TARGET=
 VERSION=
 VERSION_BASE=
@@ -35,6 +35,10 @@ BUILD_TYPE="addon"
 BUILD_TASKS=()
 BUILD_ERROR=()
 declare -A BUILD_MACHINE=(
+                          [jethub-d1]="aarch64" \
+                          [jethub-d1p]="aarch64" \
+                          [jethub-h1]="aarch64" \
+                          [jethub-h2]="aarch64" \
                           [generic-x86-64]="amd64" \
                           [intel-nuc]="amd64" \
                           [khadas-vim3]="aarch64" \
@@ -62,7 +66,7 @@ declare -A BUILD_MACHINE=(
 function print_help() {
     cat << EOF
 Hass.io build-env for ecosystem:
-docker run --rm homeassistant/{arch}-builder:latest [options]
+docker run --rm jethubjhaos/{arch}-builder:latest [options]
 
 Options:
   -h, --help
@@ -519,7 +523,7 @@ function build_addon() {
 
     # Set defaults build things
     if [ -z "$build_from" ]; then
-        build_from="homeassistant/${build_arch}-base:latest"
+        build_from="jethubjhaos/${build_arch}-base:latest"
     fi
 
     # Additional build args
