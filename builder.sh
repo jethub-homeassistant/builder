@@ -837,7 +837,20 @@ function cosign_verify() {
     done
 
     if bashio::var.false "${success}"; then
-        bashio::log.warning "Validation of ${image} fails (cosign)!"
+        bashio::log.warning "Validation of ${image} fails (cosign)! try to sign. Check and restart"
+
+        for j in {1..6}; do
+          if cosign sign --yes "${image}"; then
+            success=true
+            break
+          fi
+          sleep $((5 * j))
+        done
+        if bashio::var.false "${success}"; then
+          bashio::log.info "Failed to sign the image (cosign)"
+        fi
+        bashio::log.info "Signed ${image} with ${trust} (cosign)"
+
         if bashio::var.true "${pull}"; then
             docker rmi "${image}" > /dev/null 2>&1 || true
         fi
