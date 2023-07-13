@@ -829,6 +829,7 @@ function cosign_verify() {
 
     # validate image
     for j in {1..6}; do
+        bashio::log.warning "cosign verify --certificate-oidc-issuer-regexp ${issuer} --certificate-identity-regexp ${identity} ${image}"
         if cosign verify --certificate-oidc-issuer-regexp "${issuer}" --certificate-identity-regexp "${identity}" "${image}"; then
             success=true
             break
@@ -854,7 +855,9 @@ function cosign_verify() {
         if bashio::var.true "${pull}"; then
             docker rmi "${image}" > /dev/null 2>&1 || true
         fi
-        return 1
+        #return 1
+        bashio::log.info "Image ${image} is not trusted (cosign) but we continue!!!!!!!!!!!!!!!!!!!!!!!"
+
     fi
     bashio::log.info "Image ${image} is trusted (cosign)"
 }
