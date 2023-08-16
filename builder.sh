@@ -830,6 +830,8 @@ function cosign_verify() {
     fi
 
     # validate image
+    echo cosign verify --certificate-oidc-issuer-regexp "${issuer}" --certificate-identity-regexp "${identity}" "${image}" 
+    echo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     for j in {1..6}; do
         if cosign verify --certificate-oidc-issuer-regexp "${issuer}" --certificate-identity-regexp "${identity}" "${image}"; then
             success=true
@@ -840,10 +842,14 @@ function cosign_verify() {
 
     if bashio::var.false "${success}"; then
         bashio::log.warning "Validation of ${image} fails (cosign)!"
-        if bashio::var.true "${pull}"; then
+        cosign_sign "${image}"
+        if bashio::var.false "${success}"; then
+          bashio::log.info "Failed to sign the image (cosign)"
+          if bashio::var.true "${pull}"; then
             docker rmi "${image}" > /dev/null 2>&1 || true
+          return 1
         fi
-        return 1
+        bashio::log.info "Signed ${image} with ${trust} (cosign)"
     fi
     bashio::log.info "Image ${image} is trusted (cosign)"
 }
