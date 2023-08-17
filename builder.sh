@@ -847,7 +847,8 @@ function cosign_verify() {
           bashio::log.info "Failed to sign the image (cosign)"
           if bashio::var.true "${pull}"; then
             docker rmi "${image}" > /dev/null 2>&1 || true
-          return 1
+            return 1
+          fi
         fi
         bashio::log.info "Signed ${image} with ${trust} (cosign)"
     fi
