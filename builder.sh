@@ -312,7 +312,14 @@ function run_build() {
 
     # Validate the base image
     if ! cosign_verify "${cosign_base_issuer}" "${cosign_base_identity}" "${build_from}" "${docker_platform}" "true"; then
-        bashio::exit.nok "Invalid base image ${build_from}"
+
+        bashio::log.warning "Validation of base image ${build_from} fails (cosign)!"
+        cosign_sign "${build_from}"
+        if bashio::var.false "${success}"; then
+          bashio::log.info "Failed to resign the base image ${build_from} (cosign)"
+          bashio::exit.nok "Invalid base image ${build_from}"
+        fi
+        bashio::log.info "Signed ${image} with ${trust} (cosign)"
     fi
 
     # Arch specific Dockerfile
