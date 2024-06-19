@@ -22,7 +22,7 @@ CUSTOM_CACHE_TAG=
 COSIGN=false
 RELEASE_TAG=false
 GIT_REPOSITORY=
-GIT_BRANCH="master"
+GIT_BRANCH="master-jethub"
 TARGET=
 VERSION=
 VERSION_BASE=
@@ -35,6 +35,11 @@ BUILD_TYPE="addon"
 BUILD_TASKS=()
 BUILD_ERROR=()
 declare -A BUILD_MACHINE=(
+                          [jethub-d1]="aarch64" \
+                          [jethub-d1p]="aarch64" \
+                          [jethub-d2]="aarch64" \
+                          [jethub-h1]="aarch64" \
+                          [jethub-h2]="aarch64" \
                           [generic-x86-64]="amd64" \
                           [intel-nuc]="amd64" \
                           [khadas-vim3]="aarch64" \
@@ -64,7 +69,7 @@ declare -A BUILD_MACHINE=(
 function print_help() {
     cat << EOF
 Home Assistant ecosystem build utility:
-docker run --rm ghcr.io/home-assistant/{arch}-builder:latest [options]
+docker run --rm ghcr.io/jethubjhaos/{arch}-builder:latest [options]
 
 Options:
   -h, --help
@@ -529,7 +534,7 @@ function build_addon() {
     # Set defaults build things
     if [ -z "$build_from" ]; then
         bashio::log.info "No build information or from not provided. Using default base image."
-        build_from="ghcr.io/home-assistant/${build_arch}-base:latest"
+        build_from="ghcr.io/jethubjhaos/${build_arch}-base:latest"
     fi
 
     # Additional build args
@@ -802,6 +807,8 @@ function cosign_verify() {
     fi
 
     # validate image
+    echo cosign verify --certificate-oidc-issuer-regexp "${issuer}" --certificate-identity-regexp "${identity}" "${image}"
+    echo ++++++++++++++++++++++++++++++++++++++++++++++++++++++++
     for j in {1..6}; do
         if cosign verify --certificate-oidc-issuer-regexp "${issuer}" --certificate-identity-regexp "${identity}" "${image}"; then
             success=true
@@ -812,10 +819,15 @@ function cosign_verify() {
 
     if bashio::var.false "${success}"; then
         bashio::log.warning "Validation of ${image} fails with cosign!"
-        if bashio::var.true "${pull}"; then
+        cosign_sign "${image}"
+        if bashio::var.false "${success}"; then
+          bashio::log.info "Failed to sign the image (cosign)"
+          if bashio::var.true "${pull}"; then
             docker rmi "${image}" > /dev/null 2>&1 || true
+          fi
+          return 1
         fi
-        return 1
+        bashio::log.info "Signed ${image} with cosign"
     fi
     bashio::log.info "Image ${image} is trusted by cosign"
 }
