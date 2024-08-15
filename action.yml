@@ -21,7 +21,7 @@ runs:
       id: version
       run: |
         input=$(echo "${{ github.action_path }}" | rev | cut -d"/" -f1 | rev)
-        if [[ "${input}" == "master" ]] || [[ -z "${input}" ]]; then
+        if [[ "${input}" == "master" ]] || [[ "${input}" == "master-jethub" ]] || [[ -z "${input}" ]]; then
           input="latest"
         fi
         echo "version=${input}" >> "$GITHUB_OUTPUT"
@@ -29,16 +29,16 @@ runs:
     - shell: bash
       if: ${{ inputs.no-pull == true }}
       run: |
-        docker pull ghcr.io/home-assistant/amd64-builder:${{ steps.version.outputs.version }}
+        docker pull ghcr.io/jethub-homeassistant/amd64-builder:${{ steps.version.outputs.version }}
         cosign verify \
           --certificate-oidc-issuer https://token.actions.githubusercontent.com \
-          --certificate-identity-regexp https://github.com/home-assistant/builder/.* \
-          ghcr.io/home-assistant/amd64-builder:${{ steps.version.outputs.version }}
+          --certificate-identity-regexp https://github.com/jethub-homeassistant/builder/.* \
+          ghcr.io/jethub-homeassistant/amd64-builder:${{ steps.version.outputs.version }}
 
     - shell: bash
       id: builder
       run: |
-        builder=$(docker images ghcr.io/home-assistant/amd64-builder:${{ steps.version.outputs.version }} -q)
+        builder=$(docker images ghcr.io/jethub-homeassistant/amd64-builder:${{ steps.version.outputs.version }} -q)
         echo "id=$builder" >> "$GITHUB_OUTPUT"
 
     - shell: bash
@@ -52,7 +52,7 @@ runs:
             -v ~/.docker:/root/.docker \
             -v ${{ github.workspace }}:/data \
             --env-file "${{ github.action_path }}/env_file" \
-            ghcr.io/home-assistant/amd64-builder:${{ steps.version.outputs.version }} \
+            ghcr.io/jethub-homeassistant/amd64-builder:${{ steps.version.outputs.version }} \
             ${{ inputs.args }}
 
     - shell: bash
